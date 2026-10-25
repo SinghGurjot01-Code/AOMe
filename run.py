@@ -227,6 +227,13 @@ def selftest(strict):
     check("core", CORE, True)
     check("training", TRAINING, strict)
     check("optional", OPTIONAL, False)
+    if sys.platform == "win32":
+        try:                              # this is exactly what the native window needs: pythonnet + WebView2 DLLs
+            import webview.platforms.edgechromium  # noqa: F401
+            lines.append("ok    native window stack (pythonnet + WebView2 loader)")
+        except BaseException as e:
+            lines.append(f"warn  native window stack: {e.__class__.__name__}: {e}  (AOMe would open in the browser)")
+            lines.extend("        " + x for x in _tb_tail(e))
     try:
         import transformers  # noqa: F401
         from transformers import AutoModelForCausalLM, AutoTokenizer  # noqa: F401 - lazy imports resolve here

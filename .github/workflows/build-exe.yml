@@ -1,1 +1,18 @@
-build-exe.yml
+name: Build Windows exe
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt pywebview pyinstaller
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pyinstaller --noconfirm AOMe.spec
+      - run: Compress-Archive -Path dist\AOMe -DestinationPath AOMe-windows.zip
+      - uses: actions/upload-artifact@v4
+        with: { name: AOMe-windows, path: AOMe-windows.zip }

@@ -10,9 +10,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - name: PyTorch with CUDA first (otherwise peft/accelerate pull the CPU-only build)
+        run: pip install torch --index-url https://download.pytorch.org/whl/cu128
       - run: pip install -r requirements.txt pywebview pyinstaller
-      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
-      - run: pyinstaller --noconfirm AOMe.spec
-      - run: Compress-Archive -Path dist\AOMe -DestinationPath AOMe-windows.zip
+      - name: Fail if torch is not the GPU build
+        run: python -c "import torch; print('torch', torch.__version__, 'CUDA build', torch.version.cuda); assert torch.version.cuda, 'CPU-only torch'"
+      - run: pyinstaller --noconfirm --clean AOMe.spec
+      - name: Self-test the built exe
+        continue-on-error: true
+        run: |
+          Start-Process -FilePath dist\AOMe\AOMe.exe -ArgumentList "--selftest","--strict" -Wait
+          Get-Content "$env:LOCALAPPDATA\AOMe\logs\selftest.txt"
+      - run: 7z a -tzip AOMe-windows.zip .\dist\AOMe
       - uses: actions/upload-artifact@v4
-        with: { name: AOMe-windows, path: AOMe-windows.zip }
+        with: { name: AOMe-windows, path: AOMe-windows.zip, compression-level: 0 }

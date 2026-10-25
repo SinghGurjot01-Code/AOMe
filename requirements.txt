@@ -1,0 +1,16 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+httpx>=0.25
+psutil>=5.9
+nvidia-ml-py>=12.535
+huggingface_hub>=0.23
+transformers>=4.44
+peft>=0.11
+accelerate>=0.30
+safetensors>=0.4
+tokenizers>=0.19
+# torch: install it FIRST (peft/accelerate otherwise pull in a plain build). NVIDIA GPU:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124
+# optional, enables 4-bit QLoRA on NVIDIA GPUs:
+#   pip install bitsandbytes
